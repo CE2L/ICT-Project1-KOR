@@ -1,0 +1,285 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-width: 100vw;
+  min-height: 100vh;
+  background: #1a1a1a;
+  color: #e5e7eb;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #7c7cf7 0%, #9d7cf7 100%);
+  border-radius: 16px;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.header h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+  color: white;
+  font-weight: 700;
+}
+
+.header p {
+  font-size: 1.1em;
+  opacity: 0.95;
+  color: white;
+}
+
+.auto-section {
+  background: #2d2d2d;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.auto-section h2 {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 1.5em;
+}
+
+.auto-section p {
+  color: #d1d5db;
+  margin-bottom: 20px;
+}
+
+.job-input {
+  width: 100%;
+  max-width: 350px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 2px solid #4b5563;
+  background: #1a1a1a;
+  color: white;
+  font-size: 16px;
+}
+
+.auto-controls {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.provider-select {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 2px solid #4b5563;
+  background: #1a1a1a;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 250px;
+}
+
+.btn-auto, .btn-analyze {
+  padding: 12px 30px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #7c7cf7 0%, #9d7cf7 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-auto:hover, .btn-analyze:hover {
+  transform: translateY(-2px);
+}
+
+.btn-auto:disabled, .btn-analyze:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.divider {
+  text-align: center;
+  color: #9ca3af;
+  margin: 30px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.input-section {
+  background: #2d2d2d;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.input-group h2 {
+  color: white;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+.input-item {
+  margin-bottom: 20px;
+}
+
+.input-item label {
+  display: block;
+  color: #d1d5db;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+textarea {
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid #4b5563;
+  background: #1a1a1a;
+  color: white;
+  font-size: 15px;
+  font-family: inherit;
+  resize: none;
+  min-height: 120px;
+  max-height: 400px;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  line-height: 1.6;
+}
+
+textarea:focus {
+  border-color: #7c7cf7;
+  outline: none;
+}
+
+textarea::placeholder {
+  color: #6b7280;
+}
+
+.generated-section {
+  background: #1a1a1a;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.generated-section h2 {
+  color: white;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.generated-item {
+  background: #2d2d2d;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #7c7cf7;
+}
+
+.generated-item h3 {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.generated-item p {
+  color: #d1d5db;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.generated-item.reference {
+  border-left-color: #10b981;
+}
+
+.result-section {
+  background: #1a1a1a;
+  padding: 40px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.result-section h2 {
+  color: white;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2em;
+  font-weight: 700;
+}
+
+.ai-provider-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c7cf7 0%, #9d7cf7 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+.score-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.score-card {
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  color: white;
+}
+
+.score-card h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  opacity: 0.95;
+  font-weight: 600;
+}
+
+.score {
+  font-size: 56px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.grade {
+  font-size: 40px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #9ca3af;
+  margin-top: 50px;
+}
