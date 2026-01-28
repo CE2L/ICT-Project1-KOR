@@ -1,8 +1,12 @@
-import routes
-from fastapi import FastAPI, Query, HTTPException, status
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+import uvicorn
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAIError
-from models import InterviewResponse
+import routes
 
 app = FastAPI(
     title="AI Interview Analyzer API",
@@ -21,37 +25,7 @@ app.add_middleware(
 def read_root():
     return {"status": "AI Interview Analyzer API is running"}
 
-@app.post("/auto-generate", response_model=InterviewResponse)
-def auto_generate(
-    job_position: str = Query("Frontend Developer", description="Job position for interview generation"),
-    provider: str = Query("openai", description="AI engine to use: openai, claude, gemini")
-):
-    from routes import get_services
-    
-    int_service, eval_service = get_services(provider)
-    
-    try:
-        generated_data = int_service.generate_content(job_position)
-        
-        return eval_service.process_analysis(
-            transcripts=generated_data["transcripts"],
-            reference=generated_data["reference"],
-            position=job_position,
-        )
-    except (OpenAIError, Exception) as e:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Error from {provider} during generation/analysis: {str(e)}",
-        )
-    except KeyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Unexpected AI response format (missing key): {str(e)}",
-        )
-
 app.include_router(routes.router)
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8004)
+    uvicorn.run(app, host="0.0.0.0", port=8012)

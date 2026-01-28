@@ -24,7 +24,8 @@ AI_PROVIDERS = {
 
 
 def get_services(provider_name: str):
-    provider = AI_PROVIDERS.get(provider_name.lower(), AI_PROVIDERS["friendli"])
+    # 기본 제공자를 openai로 설정하거나 사용자의 선택에 따름
+    provider = AI_PROVIDERS.get(provider_name.lower(), AI_PROVIDERS["openai"])
     return (
         InterviewService(ai_service=provider),
         EvaluationService(ai_service=provider)
@@ -76,8 +77,11 @@ def create_interview_data(
 ):
     int_service, eval_service = get_services(provider)
     try:
+        # 1. AI를 통해 질문, 답변셋, 기준 답변 생성
         generated_data = int_service.generate_content(req.job_position)
 
+        # 2. 생성된 데이터를 평가 서비스로 전달하여 분석 리포트 및 점수 생성
+        # 여기서 question 데이터를 명시적으로 넘겨주어야 프론트엔드에서 확인 가능합니다.
         return eval_service.process_analysis(
             transcripts=generated_data["transcripts"],
             reference=generated_data["reference"],

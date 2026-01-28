@@ -26,8 +26,10 @@ class OpenAIService(BaseAIService):
     def fetch_chat_completion(self, prompt: str) -> str:
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "system", "content": "당신은 IT 기술 면접 전문가입니다. 질문은 변별력 있게 깊이 있는 내용을 다루며, 답변은 실무적인 통찰력이 드러나도록 한국어로 상세히 작성하세요."},
-                      {"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "당신은 IT 기술 면접 전문가입니다. **모든 답변은 반드시 처음부터 끝까지 한국어로만 작성하세요.** 영어를 절대 섞지 마세요."},
+                {"role": "user", "content": prompt}
+            ],
         )
         return response.choices[0].message.content
 
@@ -54,9 +56,14 @@ class FriendliService(BaseAIService):
     def fetch_chat_completion(self, prompt: str) -> str:
         if not self.has_key:
             raise ValueError("Friendli API 키가 설정되지 않았습니다.")
+
+        # Llama 모델은 한국어 지시를 최상단에 두어야 효과적입니다.
         response = self.client.chat.completions.create(
             model="meta-llama-3.1-8b-instruct",
-            messages=[{"role": "user", "content": prompt + "\n모든 답변은 한국어로 아주 상세하게 작성해줘."}]
+            messages=[
+                {"role": "system", "content": "당신은 한국어 면접 전문가입니다. 모든 출력은 반드시 한국어로만 상세히 작성해야 합니다."},
+                {"role": "user", "content": prompt}
+            ]
         )
         return response.choices[0].message.content
 
@@ -87,7 +94,8 @@ class GeminiService(BaseAIService):
     def fetch_chat_completion(self, prompt: str) -> str:
         if not self.has_key:
             raise ValueError("Gemini API 키가 설정되지 않았습니다.")
-        response = self.model.generate_content(prompt + "\n모든 답변은 한국어로 전문적이고 길게 작성해줘.")
+        # 프롬프트 앞에 강력한 한글 답변 지시사항을 추가합니다.
+        response = self.model.generate_content("다음 요청에 대해 반드시 전문적인 한국어로만 답변하세요:\n\n" + prompt)
         return response.text
 
     def get_embedding(self, text: str) -> List[float]:
@@ -118,32 +126,35 @@ class InterviewService:
         self.ai = ai_service
 
     def generate_content(self, job_position: str):
+        # 영문 태그([QUESTION] 등)를 모두 한글로 교체하여 언어 이탈을 방지합니다.
         prompt = f"""
-        다음 직무에 대해 변별력이 높은 고난도 면접 데이터를 한국어로 생성하세요: {job_position}.
-        각 답변은 최소 5문장 이상으로 구성하며, 전문 용어를 적절히 사용하여 구체적으로 작성하세요.
+        다음 직무에 대해 변별력이 높은 고난도 면접 데이터를 **반드시 한국어로만** 생성하세요: {job_position}.
+        모든 텍스트에 영어 사용을 금지하며, 전문 용어는 한글로 적거나 한글 뒤 괄호를 사용하세요.
 
-        [QUESTION] 
-        (해당 직무의 시니어 급에서 다룰 법한 심화 기술 면접 질문 하나만 작성)
+        [질문] 
+        (해당 직무의 심화 기술 면접 질문 하나만 작성)
 
-        [CANDIDATE 1] 
-        (최고 수준의 답변. 기술적 원리, 장단점 비교, 성능 최적화 관점에서의 고려 사항이 포함된 논리적이고 매우 상세한 한국어 답변)
+        [면접자 1] 
+        (최고 수준의 답변. 기술적 원리, 장단점 비교, 성능 최적화 관점에서의 고려 사항이 포함된 매우 상세한 한국어 답변)
 
-        [CANDIDATE 2] 
-        (중급 수준의 답변. 핵심 개념은 명확히 파악하고 있으나, 대규모 아키텍처나 성능 튜닝에 대한 깊은 통찰력은 다소 부족한 한국어 답변)
+        [면접자 2] 
+        (중급 수준의 답변. 핵심 개념은 있으나 통찰력은 다소 부족한 한국어 답변)
 
-        [CANDIDATE 3] 
-        (초급 수준의 답변. 기본적인 정의 위주로 설명하며 실무적 응용 능력이 다소 떨어지는 한국어 답변)
+        [면접자 3] 
+        (초급 수준의 답변. 기본적인 정의 위주로 설명하는 3~4문장 정도의 한국어 답변)
 
-        [REFERENCE] 
-        (최고 수준의 전문가가 제시하는 모범 답안. 최신 트렌드와 베스트 프렉티스를 포함하여 가장 완성도 높은 본문만 작성하세요.)
+        [모범답안] 
+        (최고 수준의 전문가가 제시하는 가장 완성도 높은 한국어 본문만 작성하세요.)
         """
+
         raw_text = self.ai.fetch_chat_completion(prompt)
 
-        q_match = re.search(r"\[QUESTION\](.*?)(\[CANDIDATE 1\]|$)", raw_text, re.S)
-        c1 = re.search(r"\[CANDIDATE 1\](.*?)(\[CANDIDATE 2\]|$)", raw_text, re.S)
-        c2 = re.search(r"\[CANDIDATE 2\](.*?)(\[CANDIDATE 3\]|$)", raw_text, re.S)
-        c3 = re.search(r"\[CANDIDATE 3\](.*?)(\[REFERENCE\]|$)", raw_text, re.S)
-        ref = re.search(r"\[REFERENCE\](.*?)$", raw_text, re.S)
+        # 바뀐 한글 태그에 맞게 정규표현식 수정
+        q_match = re.search(r"\[질문\](.*?)(\[면접자 1\]|$)", raw_text, re.S)
+        c1 = re.search(r"\[면접자 1\](.*?)(\[면접자 2\]|$)", raw_text, re.S)
+        c2 = re.search(r"\[면접자 2\](.*?)(\[면접자 3\]|$)", raw_text, re.S)
+        c3 = re.search(r"\[면접자 3\](.*?)(\[모범답안\]|$)", raw_text, re.S)
+        ref = re.search(r"\[모범답안\](.*?)$", raw_text, re.S)
 
         question = q_match.group(1).strip() if q_match else f"{job_position} 심화 기술 면접 질문입니다."
         transcripts = [
@@ -188,14 +199,13 @@ class EvaluationService:
 
     def generate_cross_analysis(self, transcripts: List[str], reference: str, position: str) -> str:
         prompt = f"""
-        당신은 기술 심사위원입니다. {position} 직무 지원자 {len(transcripts)}명의 답변을 정밀 분석하세요.
-
+        당신은 기술 심사위원입니다. {position} 직무 지원자 {len(transcripts)}명의 답변을 한국어로 정밀 분석하세요.
         전문가 기준 답변: {reference}
 
         지원자 답변 목록:
         {chr(10).join([f"면접자 {i+1}: {t}" for i, t in enumerate(transcripts)])}
 
-        기술적 깊이, 아키텍처 이해도, 성능 최적화 관점을 포함하여 한국어로 리포트를 작성하세요:
+        기술적 깊이, 아키텍처 이해도, 성능 최적화 관점을 포함하여 **반드시 한국어로** 리포트를 작성하세요:
         1. 공통 강점 및 기술적 특징
         2. 주요 누락 사항 및 공통 약점
         3. 변별력을 가르는 핵심적 차이점
@@ -222,12 +232,12 @@ class EvaluationService:
             ))
 
         prompt = f"""
-        당신은 CTO입니다. 다음 지원자들의 답변을 기술 면접 기준과 대조하여 최종 채용 의견을 작성하세요.
+        당신은 CTO입니다. 다음 지원자들의 답변을 기술 면접 기준과 대조하여 최종 채용 의견을 **반드시 한국어로** 작성하세요.
         기준 답변: {reference}
         지원자별 답변:
         {chr(10).join([f"면접자 {i+1}: {t}" for i, t in enumerate(transcripts)])}
 
-        면접자 {best_index + 1}의 답변이 왜 압도적인지, 특히 어떤 부분에서 실무적 통찰력이 돋보이는지 한국어로 상세히 기술하세요.
+        면접자 {best_index + 1}의 답변이 왜 우수한지 한국어로 상세히 기술하세요.
         """
         explanation = self.ai.fetch_chat_completion(prompt)
 

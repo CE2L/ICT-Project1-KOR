@@ -15,9 +15,8 @@ function App() {
   const textareaRefs = useRef([]);
   const referenceRef = useRef(null);
 
+  // 환경 변수 무시하고 8012 포트로 강제 고정
   const defaultApi = useMemo(() => {
-    const envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl && String(envUrl).trim()) return String(envUrl).trim();
     return "http://4.230.16.126:8012";
   }, []);
 
